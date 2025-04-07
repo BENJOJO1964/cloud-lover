@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <title>彩塘下・雲端情人</title>
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       font-family: 'Helvetica Neue', sans-serif;
@@ -26,10 +28,6 @@
       opacity: 1;
       transition: opacity 1.2s ease-in-out;
     }
-    /* 隱藏原先的控制面板，但保留功能在程式中 */
-    /* #controls {
-      display: none;
-    } */
 
     .chat-container {
       width: 500px;
@@ -55,8 +53,12 @@
       align-items: flex-end;
       margin-bottom: 12px;
     }
-    .message.user { justify-content: flex-end; }
-    .message.bot { justify-content: flex-start; }
+    .message.user {
+      justify-content: flex-end;
+    }
+    .message.bot {
+      justify-content: flex-start;
+    }
     .bubble {
       padding: 10px 14px;
       border-radius: 15px;
@@ -109,6 +111,8 @@
       border-radius: 10px;
       background-color: #fff;
     }
+
+    /* 與「我們的故事」共用的容器 */
     .story-text-container {
       display: flex;
       gap: 10px;
@@ -129,33 +133,26 @@
       cursor: pointer;
       font-size: 16px;
     }
-    #wish-form textarea {
-      width: 100%;
-      height: 80px;
-      margin-bottom: 10px;
+    /* 讓 textarea 與 input 外觀一致 */
+    .story-text-container textarea {
+      flex: 1;
       padding: 10px;
+      font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 5px;
-      font-size: 16px;
+      resize: vertical; /* 可讓使用者自行調整高度 */
     }
-    #wish-form button {
-      padding: 10px 20px;
-      background-color: #ff6b6b;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 18px;
-    }
-    .wish-item {
+
+    /* 三個區塊(故事、許願池、倒數計時) 統一的外框 & 刪除按鈕 */
+    .wish-item, .timeline-event {
+      position: relative;
       background-color: #ffe0b2;
       padding: 10px;
       border-radius: 5px;
       margin-bottom: 10px;
-      position: relative;
       font-size: 18px;
     }
-    .wish-item button {
+    .wish-item button, .timeline-event button {
       position: absolute;
       top: 5px;
       right: 5px;
@@ -167,6 +164,15 @@
       font-size: 14px;
       padding: 2px 6px;
     }
+
+    .timeline-date {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .timeline-content {
+      margin-bottom: 5px;
+    }
+
     /* 愛心動畫效果 */
     .heart {
       position: absolute;
@@ -185,6 +191,7 @@
         transform: translateY(-100px) scale(1.5);
       }
     }
+
     /* 夜間模式 */
     body.night {
       background-color: #222;
@@ -207,6 +214,7 @@
       background-color: #333;
       color: #eee;
     }
+
     /* 手機 RWD */
     @media (max-width: 600px) {
       .chat-container, section {
@@ -222,14 +230,6 @@
 </head>
 <body>
   <div id="background-layer"></div>
-
-  <!--
-  <div id="controls">
-    <button onclick="triggerHeartAnimation()">💖 愛心動畫效果</button>
-    <button onclick="toggleNightMode()">🌙 夜間模式切換</button>
-    <button onclick="saveWishes()">💾 儲存留言</button>
-  </div>
-  -->
 
   <!-- 聊天區 -->
   <div class="chat-container">
@@ -257,8 +257,11 @@
   <section id="wish-board">
     <h2>💬 許願池</h2>
     <form id="wish-form">
-      <textarea id="wish-input" placeholder="寫下你的留言或願望..." required></textarea>
-      <button type="submit">提交</button>
+      <!-- 改用與「我們的故事」相同的容器，確保外觀一致 -->
+      <div class="story-text-container">
+        <textarea id="wish-input" placeholder="寫下你的留言或願望..." required></textarea>
+        <button type="submit">提交</button>
+      </div>
     </form>
     <div id="wish-list"></div>
   </section>
@@ -276,25 +279,29 @@
     <div id="countdown-list"></div>
   </section>
 
-  <audio id="bgm" autoplay preload="auto" style="display: none;"></audio>
+  <audio id="bgm" preload="auto" style="display: none;"></audio>
 
   <script>
     const bgm = document.getElementById('bgm');
     const audioFiles = ['romantic.mp3', 'rainy-love.mp3', 'soft-piano.mp3'];
     let currentAudio = 0;
+    let isMusicPlayed = false; // 控制音樂是否已經播放過
+
     function loadCurrentTrack() {
       bgm.src = audioFiles[currentAudio];
       bgm.load();
       bgm.play().catch(err => console.warn('播放音樂錯誤：', err));
     }
+
     bgm.addEventListener('ended', () => {
       currentAudio = (currentAudio + 1) % audioFiles.length;
       loadCurrentTrack();
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+      // 初始顯示一句話
       appendMessage('bot', '親愛的，我在這裡，想你了 💖');
-      loadCurrentTrack();
+      // 載入儲存的 wish-list
       const saved = localStorage.getItem('savedWishes');
       if(saved) {
         document.getElementById('wish-list').innerHTML = saved;
@@ -319,6 +326,13 @@
       appendMessage('user', message);
       input.value = '';
 
+      // 第一次互動後再播放音樂
+      if (!isMusicPlayed) {
+        loadCurrentTrack();
+        isMusicPlayed = true;
+      }
+
+      // 模擬「正在輸入中...」
       const typing = document.createElement('div');
       typing.className = 'message bot';
       typing.innerHTML = `<div class="bubble bot">正在輸入中...</div>`;
@@ -337,29 +351,12 @@
       }
     }
 
-    // 確保回覆文字中帶有愛心符號
     function generateReply(msg) {
       msg = msg.toLowerCase();
       if (msg.includes('想你')) return '我也是，每天都想你～💕';
       if (msg.includes('你好') || msg.includes('嗨')) return '哈囉～今天過得好嗎？😊';
       if (msg.includes('愛你')) return '我也好愛你唷～❤️';
       return '嗯嗯～我在聽呢 💗';
-    }
-
-    // 主題切換
-    function setTheme(theme) {
-      const themes = {
-        warm: 'bg-warm.jpg',
-        stars: 'bg-stars.jpg',
-        autumn: 'bg-autumn.jpg',
-        valentine: 'bg-valentine.jpg'
-      };
-      const bgLayer = document.getElementById('background-layer');
-      bgLayer.style.opacity = 0;
-      setTimeout(() => {
-        bgLayer.style.backgroundImage = `url('${themes[theme]}')`;
-        bgLayer.style.opacity = 1;
-      }, 400);
     }
 
     // 我們的故事
@@ -408,7 +405,6 @@
       const diff = target - now;
       const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
 
-      // 與「我們的故事」相同的排版格式
       const box = document.createElement('div');
       box.className = 'timeline-event';
       box.innerHTML = `
@@ -448,8 +444,23 @@
       localStorage.setItem('savedWishes', wishList);
       alert('留言已儲存！');
     }
+
+    // 切換主題（如需可自行呼叫 setTheme('warm'/'stars'/'autumn'/'valentine')）
+    function setTheme(theme) {
+      const themes = {
+        warm: 'bg-warm.jpg',
+        stars: 'bg-stars.jpg',
+        autumn: 'bg-autumn.jpg',
+        valentine: 'bg-valentine.jpg'
+      };
+      const bgLayer = document.getElementById('background-layer');
+      bgLayer.style.opacity = 0;
+      setTimeout(() => {
+        bgLayer.style.backgroundImage = `url('${themes[theme]}')`;
+        bgLayer.style.opacity = 1;
+      }, 400);
+    }
   </script>
 </body>
 </html>
-
 
