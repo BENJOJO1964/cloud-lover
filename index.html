@@ -13,11 +13,9 @@
       flex-direction: column;
       align-items: center;
       position: relative;
-      /* 基本字體放大 */
       font-size: 18px;
       color: #333;
     }
-    /* 區塊標題字體調大 */
     h2 {
       font-size: 24px;
       margin-bottom: 12px;
@@ -41,13 +39,12 @@
       margin: 20px 0 10px;
       z-index: 1;
     }
-    /* 調整主題按鈕底色、字體及懸停放大效果 */
     .theme-selector button {
       padding: 8px 18px;
       border-radius: 20px;
       border: none;
-      background-color: #ffdfcc; /* 溫馨色系 */
-      font-size: 18px; /* 放大按鈕文字 */
+      background-color: #ffdfcc;
+      font-size: 18px;
       cursor: pointer;
       transition: transform 0.2s ease;
     }
@@ -84,7 +81,7 @@
       padding: 10px 14px;
       border-radius: 15px;
       max-width: 70%;
-      font-size: 18px; /* 放大對話文字 */
+      font-size: 18px;
       line-height: 1.4;
     }
     .bubble.user {
@@ -113,7 +110,7 @@
       padding: 10px 16px;
       border-radius: 15px;
       border: 1px solid #ccc;
-      font-size: 16px; /* 放大輸入欄文字 */
+      font-size: 16px;
     }
     .input-area button {
       background: #b22222;
@@ -130,17 +127,49 @@
       margin: 20px;
       padding: 20px;
       border-radius: 10px;
-      font-size: 18px; /* 區塊內容字體調大 */
+      font-size: 18px;
     }
-    /* 調整「我們的故事」與「記憶日倒數計時」的輸入欄及內容字體 */
+
+    .story-text-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .story-text-container input,
+    .story-text-container button {
+      height: 48px;
+      font-size: 18px;
+    }
+    .story-text-container input[type="date"] {
+      min-width: 140px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-family: inherit;
+    }
+    .story-text-container input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .story-text-container button,
+    #countdown-form button {
+      padding: 10px 20px;
+      background-color: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      white-space: nowrap;
+    }
+
     #timeline, #countdown {
       font-size: 22px;
     }
-    #timeline input, #timeline textarea,
-    #countdown input, #countdown textarea {
-      font-size: 22px;
-    }
     #timeline { background-color: #f9f9f9; }
+
     .timeline-event {
       margin-bottom: 15px;
       padding-left: 20px;
@@ -164,15 +193,16 @@
       font-weight: bold;
       color: #ff6b6b;
     }
-    #wish-board { background-color: #fff3e0; }
+
     #wish-form textarea {
       width: 100%;
       height: 80px;
       margin-bottom: 10px;
       padding: 10px;
-      border-radius: 5px;
       border: 1px solid #ccc;
+      border-radius: 5px;
       font-size: 16px;
+      resize: none;
     }
     #wish-form button {
       padding: 10px 20px;
@@ -183,6 +213,11 @@
       cursor: pointer;
       font-size: 18px;
     }
+    #wish-board {
+      width: 500px;
+      background-color: #fff2dc;
+    }
+
     .wish-item {
       background-color: #ffe0b2;
       padding: 10px;
@@ -203,32 +238,36 @@
       font-size: 14px;
       padding: 2px 6px;
     }
+
     #countdown {
       background-color: #e0f7fa;
       text-align: left;
-      font-size: 22px;
     }
-    #countdown-list .wish-item {
-      margin-bottom: 10px;
-    }
-    #countdown-timer {
-      font-size: 24px;
-      font-weight: bold;
-      color: #00796b;
-    }
-    /* 讓紀念日表單各欄位同排、等高 */
+
     #countdown-form {
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+    #countdown-form input[type="date"] {
+      min-width: 140px;
+      font-size: 18px;
+      height: 48px;
+      padding: 8px;
+    }
+    #countdown-form input[type="text"] {
+      flex: 1;
+      font-size: 18px;
+      height: 48px;
+      padding: 8px;
     }
   </style>
 </head>
 <body>
   <div id="background-layer"></div>
 
-  <!-- 音樂輪播：加上 autoplay 與 preload="auto" -->
-  <audio id="bgm" controls autoplay preload="auto"></audio>
+  <!-- 音樂輪播 -->
+  <audio id="bgm" autoplay preload="auto" style="display: none;"></audio>
 
   <div class="theme-selector">
     <button onclick="setTheme('warm')">溫馨</button>
@@ -249,9 +288,11 @@
   <section id="timeline">
     <h2>✨ 我們的故事</h2>
     <form id="story-form">
-      <input type="date" id="story-date" required />
-      <input type="text" id="story-text" placeholder="輸入事件內容..." required />
-      <button type="submit">新增</button>
+      <div class="story-text-container">
+        <input type="date" id="story-date" required />
+        <input type="text" id="story-text" placeholder="輸入事件內容..." required />
+        <button type="submit">新增</button>
+      </div>
     </form>
     <div id="story-list"></div>
   </section>
@@ -272,39 +313,36 @@
     <form id="countdown-form">
       <input type="date" id="event-date" required />
       <input type="text" id="event-title" placeholder="紀念日名稱…" required />
-      <!-- 將「新增紀念日」改為「新增」 -->
       <button type="submit">新增</button>
     </form>
     <div id="countdown-list"></div>
   </section>
 
   <script>
-    // --- 音樂輪播設定 ---
     const bgm = document.getElementById('bgm');
     const audioFiles = ['romantic.mp3', 'rainy-love.mp3', 'soft-piano.mp3'];
     let currentAudio = 0;
 
-    // 初始化：載入第一首並嘗試播放（可能被瀏覽器攔截，須使用者點擊播放）
     function loadCurrentTrack() {
       bgm.src = audioFiles[currentAudio];
       bgm.load();
+      bgm.play().catch(err => {
+        console.warn('播放音樂錯誤：', err);
+      });
     }
-    loadCurrentTrack();
 
-    // 當音樂播放結束，換下一首
     bgm.addEventListener('ended', () => {
       currentAudio = (currentAudio + 1) % audioFiles.length;
       loadCurrentTrack();
-      bgm.play().catch(err => {
-        console.error('播放下一首時發生錯誤：', err);
-      });
     });
 
-    // --- 聊天區功能 ---
-    const chatBox = document.getElementById('chat-box');
-    const input = document.getElementById('user-input');
+    document.addEventListener('DOMContentLoaded', () => {
+      appendMessage('bot', '親愛的，我在這裡，想你了 💖');
+      loadCurrentTrack();
+    });
 
     function appendMessage(sender, text) {
+      const chatBox = document.getElementById('chat-box');
       const msg = document.createElement('div');
       msg.className = `message ${sender}`;
       msg.innerHTML = sender === 'user'
@@ -315,6 +353,7 @@
     }
 
     function sendMessage() {
+      const input = document.getElementById('user-input');
       const message = input.value.trim();
       if (!message) return;
       appendMessage('user', message);
@@ -322,8 +361,7 @@
       const typing = document.createElement('div');
       typing.className = 'message bot';
       typing.innerHTML = `<div class="bubble bot">正在輸入中...</div>`;
-      chatBox.appendChild(typing);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      document.getElementById('chat-box').appendChild(typing);
       setTimeout(() => {
         typing.remove();
         appendMessage('bot', generateReply(message));
@@ -360,7 +398,6 @@
       }, 400);
     }
 
-    // --- 我們的故事：新增與刪除 ---
     document.getElementById('story-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const date = document.getElementById('story-date').value;
@@ -378,7 +415,6 @@
       }
     });
 
-    // --- 許願池：新增與刪除 ---
     document.getElementById('wish-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const text = document.getElementById('wish-input').value.trim();
@@ -394,7 +430,6 @@
       }
     });
 
-    // --- 紀念日倒數：新增與刪除 ---
     document.getElementById('countdown-form').addEventListener('submit', function (e) {
       e.preventDefault();
       const title = document.getElementById('event-title').value.trim();
@@ -414,12 +449,8 @@
       document.getElementById('countdown-list').prepend(box);
       this.reset();
     });
-
-    // --- 初始歡迎訊息 ---
-    document.addEventListener('DOMContentLoaded', () => {
-      appendMessage('bot', '親愛的，我在這裡，想你了 💖');
-    });
   </script>
 </body>
 </html>
+
 
