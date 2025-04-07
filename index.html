@@ -1,24 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>彩塘下・雲端情人</title>
   <style>
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Helvetica Neue', sans-serif;
-      background-color: #000;
+      background-color: #fff;
+      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
-      position: relative;
-      font-size: 18px;
-      color: #333;
-    }
-    h2 {
-      font-size: 24px;
-      margin-bottom: 12px;
     }
     #background-layer {
       position: fixed;
@@ -28,40 +22,26 @@
       z-index: -1;
       background-image: url('bg-warm.jpg');
       background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
+      background-position: center;
       opacity: 1;
       transition: opacity 1.2s ease-in-out;
     }
-    .theme-selector {
-      display: flex;
-      gap: 12px;
-      margin: 20px 0 10px;
-      z-index: 1;
-    }
-    .theme-selector button {
-      padding: 8px 18px;
-      border-radius: 20px;
-      border: none;
-      background-color: #ffdfcc;
-      font-size: 18px;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    .theme-selector button:hover {
-      transform: scale(1.15);
-    }
+    /* 隱藏原先的控制面板，但保留功能在程式中 */
+    /* #controls {
+      display: none;
+    } */
+
     .chat-container {
       width: 500px;
       height: 600px;
       background: rgba(255, 240, 235, 0.9);
-      backdrop-filter: blur(10px);
       border-radius: 20px;
       box-shadow: 0 6px 24px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       z-index: 1;
+      margin-top: 60px;
     }
     #chat-box {
       flex: 1;
@@ -127,73 +107,28 @@
       margin: 20px;
       padding: 20px;
       border-radius: 10px;
-      font-size: 18px;
+      background-color: #fff;
     }
-
     .story-text-container {
       display: flex;
       gap: 10px;
-      align-items: center;
     }
-    .story-text-container input,
-    .story-text-container button {
-      height: 48px;
-      font-size: 18px;
-    }
-    .story-text-container input[type="date"] {
-      min-width: 140px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-family: inherit;
-    }
-    .story-text-container input[type="text"] {
+    .story-text-container input {
       flex: 1;
       padding: 10px;
+      font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-    .story-text-container button,
-    #countdown-form button {
-      padding: 10px 20px;
+    .story-text-container button {
+      padding: 10px 16px;
       background-color: #ff6b6b;
-      color: white;
+      color: #fff;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 18px;
-      white-space: nowrap;
+      font-size: 16px;
     }
-
-    #timeline, #countdown {
-      font-size: 22px;
-    }
-    #timeline { background-color: #f9f9f9; }
-
-    .timeline-event {
-      margin-bottom: 15px;
-      padding-left: 20px;
-      border-left: 3px solid #ff6b6b;
-      position: relative;
-      font-size: 22px;
-    }
-    .timeline-event button {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: #ff6b6b;
-      border: none;
-      color: #fff;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 14px;
-      padding: 2px 6px;
-    }
-    .timeline-date {
-      font-weight: bold;
-      color: #ff6b6b;
-    }
-
     #wish-form textarea {
       width: 100%;
       height: 80px;
@@ -202,7 +137,6 @@
       border: 1px solid #ccc;
       border-radius: 5px;
       font-size: 16px;
-      resize: none;
     }
     #wish-form button {
       padding: 10px 20px;
@@ -213,11 +147,6 @@
       cursor: pointer;
       font-size: 18px;
     }
-    #wish-board {
-      width: 500px;
-      background-color: #fff2dc;
-    }
-
     .wish-item {
       background-color: #ffe0b2;
       padding: 10px;
@@ -238,44 +167,71 @@
       font-size: 14px;
       padding: 2px 6px;
     }
-
-    #countdown {
-      background-color: #e0f7fa;
-      text-align: left;
+    /* 愛心動畫效果 */
+    .heart {
+      position: absolute;
+      font-size: 24px;
+      color: #ff6b6b;
+      animation: floatUp 2s ease-out forwards;
+      pointer-events: none;
     }
-
-    #countdown-form {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    @keyframes floatUp {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-100px) scale(1.5);
+      }
     }
-    #countdown-form input[type="date"] {
-      min-width: 140px;
-      font-size: 18px;
-      height: 48px;
-      padding: 8px;
+    /* 夜間模式 */
+    body.night {
+      background-color: #222;
+      color: #eee;
     }
-    #countdown-form input[type="text"] {
-      flex: 1;
-      font-size: 18px;
-      height: 48px;
-      padding: 8px;
+    body.night .chat-container {
+      background: rgba(30, 30, 30, 0.9);
+    }
+    body.night .input-area {
+      background: #333;
+    }
+    body.night .input-area input {
+      background: #555;
+      color: #eee;
+    }
+    body.night .input-area button {
+      background: #444;
+    }
+    body.night section {
+      background-color: #333;
+      color: #eee;
+    }
+    /* 手機 RWD */
+    @media (max-width: 600px) {
+      .chat-container, section {
+        width: 90%;
+        margin: 10px;
+      }
+      .story-text-container {
+        flex-direction: column;
+        gap: 5px;
+      }
     }
   </style>
 </head>
 <body>
   <div id="background-layer"></div>
 
-  <!-- 音樂輪播 -->
-  <audio id="bgm" autoplay preload="auto" style="display: none;"></audio>
-
-  <div class="theme-selector">
-    <button onclick="setTheme('warm')">溫馨</button>
-    <button onclick="setTheme('stars')">星空</button>
-    <button onclick="setTheme('autumn')">落葉</button>
-    <button onclick="setTheme('valentine')">情人節</button>
+  <!--
+  <div id="controls">
+    <button onclick="triggerHeartAnimation()">💖 愛心動畫效果</button>
+    <button onclick="toggleNightMode()">🌙 夜間模式切換</button>
+    <button onclick="saveWishes()">💾 儲存留言</button>
   </div>
+  -->
 
+  <!-- 聊天區 -->
   <div class="chat-container">
     <div id="chat-box"></div>
     <div class="input-area">
@@ -311,26 +267,26 @@
   <section id="countdown">
     <h2>🎁 記憶日倒數計時</h2>
     <form id="countdown-form">
-      <input type="date" id="event-date" required />
-      <input type="text" id="event-title" placeholder="紀念日名稱…" required />
-      <button type="submit">新增</button>
+      <div class="story-text-container">
+        <input type="date" id="event-date" required />
+        <input type="text" id="event-title" placeholder="紀念日名稱…" required />
+        <button type="submit">新增</button>
+      </div>
     </form>
     <div id="countdown-list"></div>
   </section>
+
+  <audio id="bgm" autoplay preload="auto" style="display: none;"></audio>
 
   <script>
     const bgm = document.getElementById('bgm');
     const audioFiles = ['romantic.mp3', 'rainy-love.mp3', 'soft-piano.mp3'];
     let currentAudio = 0;
-
     function loadCurrentTrack() {
       bgm.src = audioFiles[currentAudio];
       bgm.load();
-      bgm.play().catch(err => {
-        console.warn('播放音樂錯誤：', err);
-      });
+      bgm.play().catch(err => console.warn('播放音樂錯誤：', err));
     }
-
     bgm.addEventListener('ended', () => {
       currentAudio = (currentAudio + 1) % audioFiles.length;
       loadCurrentTrack();
@@ -339,6 +295,10 @@
     document.addEventListener('DOMContentLoaded', () => {
       appendMessage('bot', '親愛的，我在這裡，想你了 💖');
       loadCurrentTrack();
+      const saved = localStorage.getItem('savedWishes');
+      if(saved) {
+        document.getElementById('wish-list').innerHTML = saved;
+      }
     });
 
     function appendMessage(sender, text) {
@@ -358,10 +318,12 @@
       if (!message) return;
       appendMessage('user', message);
       input.value = '';
+
       const typing = document.createElement('div');
       typing.className = 'message bot';
       typing.innerHTML = `<div class="bubble bot">正在輸入中...</div>`;
       document.getElementById('chat-box').appendChild(typing);
+
       setTimeout(() => {
         typing.remove();
         appendMessage('bot', generateReply(message));
@@ -375,6 +337,7 @@
       }
     }
 
+    // 確保回覆文字中帶有愛心符號
     function generateReply(msg) {
       msg = msg.toLowerCase();
       if (msg.includes('想你')) return '我也是，每天都想你～💕';
@@ -383,6 +346,7 @@
       return '嗯嗯～我在聽呢 💗';
     }
 
+    // 主題切換
     function setTheme(theme) {
       const themes = {
         warm: 'bg-warm.jpg',
@@ -398,6 +362,7 @@
       }, 400);
     }
 
+    // 我們的故事
     document.getElementById('story-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const date = document.getElementById('story-date').value;
@@ -415,6 +380,7 @@
       }
     });
 
+    // 許願池
     document.getElementById('wish-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const text = document.getElementById('wish-input').value.trim();
@@ -430,25 +396,58 @@
       }
     });
 
+    // 記憶日倒數計時
     document.getElementById('countdown-form').addEventListener('submit', function (e) {
       e.preventDefault();
       const title = document.getElementById('event-title').value.trim();
       const date = document.getElementById('event-date').value;
       if (!title || !date) return;
+
       const now = new Date();
       const target = new Date(date);
       const diff = target - now;
       const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+      // 與「我們的故事」相同的排版格式
       const box = document.createElement('div');
-      box.className = 'wish-item';
+      box.className = 'timeline-event';
       box.innerHTML = `
-        <strong>${title}</strong>：還有
-        <span style="color:#d32f2f;">${daysLeft}</span> 天
+        <div class="timeline-date">${date}</div>
+        <div class="timeline-content">
+          <strong>${title}</strong>：還有
+          <span style="color:#d32f2f;">${daysLeft}</span> 天
+        </div>
         <button onclick="this.parentElement.remove()">刪除</button>
       `;
       document.getElementById('countdown-list').prepend(box);
       this.reset();
     });
+
+    // 愛心動畫
+    function triggerHeartAnimation() {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.innerText = '💖';
+      heart.style.left = '50%';
+      heart.style.top = '50%';
+      heart.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(heart);
+      setTimeout(() => {
+        heart.remove();
+      }, 2000);
+    }
+
+    // 夜間模式
+    function toggleNightMode() {
+      document.body.classList.toggle('night');
+    }
+
+    // 儲存留言
+    function saveWishes() {
+      const wishList = document.getElementById('wish-list').innerHTML;
+      localStorage.setItem('savedWishes', wishList);
+      alert('留言已儲存！');
+    }
   </script>
 </body>
 </html>
